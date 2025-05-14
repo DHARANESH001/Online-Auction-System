@@ -1,0 +1,214 @@
+.profile-page {
+  min-height: 100vh;
+  background-color: var(--dark-background);
+  color: var(--dark-text);
+  padding-top: 1rem;
+}
+
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.profile-section,
+.bidding-history-section {
+  background-color: var(--dark-card-bg);
+  border-radius: 10px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--dark-border);
+}
+
+.tab-navigation {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  background-color: var(--dark-card-bg);
+  color: var(--dark-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  background-color: var(--dark-hover);
+}
+
+.tab-button.active {
+  background-color: var(--dark-primary);
+  color: white;
+}
+
+.profile-section h2,
+.bidding-history-section h2 {
+  color: var(--dark-text);
+  margin-bottom: 1.5rem;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-info p {
+  color: var(--dark-text);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edit-button,
+.save-button,
+.cancel-button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-button {
+  background-color: #2c5282;
+  color: white;
+  border: none;
+  margin-top: 1rem;
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.save-button {
+  background-color: #48bb78;
+  color: white;
+  border: none;
+}
+
+.cancel-button {
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  color: var(--dark-text);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--dark-border);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: var(--dark-card-bg);
+  color: var(--dark-text);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #2c5282;
+  box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.1);
+}
+
+.bidding-history {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.bid-item {
+  background-color: var(--dark-card-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--dark-border);
+  transition: transform 0.2s ease;
+}
+
+.bid-item:hover {
+  transform: translateY(-2px);
+}
+
+.bid-item h3 {
+  color: var(--dark-text);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.bid-item p {
+  color: var(--dark-text-secondary);
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message {
+  background-color: rgba(197, 48, 48, 0.1);
+  color: #e53e3e;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid #e53e3e;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.bid-item.active .status-badge {
+  background-color: rgba(72, 187, 120, 0.1);
+  color: #48bb78;
+}
+
+.bid-item.outbid .status-badge {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: #e53e3e;
+}
+
+.bid-item.won .status-badge {
+  background-color: rgba(66, 153, 225, 0.1);
+  color: #4299e1;
+}
+
+.edit-button:hover,
+.save-button:hover,
+.cancel-button:hover {
+  filter: brightness(110%);
+  transform: translateY(-1px);
+}
+
+.edit-button:active,
+.save-button:active,
+.cancel-button:active {
+  transform: translateY(0);
+}

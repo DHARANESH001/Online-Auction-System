@@ -1,0 +1,258 @@
+.auction-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+}
+
+.auction-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.auction-card.list {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1.5rem;
+}
+
+.card-image {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.card-image img.loaded {
+  opacity: 1;
+}
+
+.card-image img.error {
+  opacity: 0.5;
+}
+
+.auction-card:hover .card-image img {
+  transform: scale(1.05);
+}
+
+.card-badges {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.category-badge,
+.condition-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.category-badge {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.condition-badge {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.quick-bid {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+}
+
+.quick-bid-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.quick-bid-btn:hover {
+  background: rgba(37, 99, 235, 0.9);
+  transform: translateY(-1px);
+}
+
+.card-content {
+  padding: 1.5rem;
+}
+
+.card-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.bid-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.current-bid,
+.time-left {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.amount {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.time {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.auction-details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail {
+  text-align: center;
+}
+
+.detail .label {
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.detail span:last-child {
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.bid-form {
+  margin-top: 1.5rem;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-weight: 500;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.input-group input::placeholder {
+  color: #64748b;
+}
+
+.bid-button {
+  width: 100%;
+  padding: 1rem;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.bid-button:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.bid-button:disabled {
+  background: #475569;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .auction-card.list {
+    grid-template-columns: 1fr;
+  }
+
+  .card-content {
+    padding: 1rem;
+  }
+
+  .bid-info {
+    grid-template-columns: 1fr;
+  }
+
+  .auction-details {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

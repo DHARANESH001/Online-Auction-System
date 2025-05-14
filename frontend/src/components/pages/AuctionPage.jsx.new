@@ -1,0 +1,133 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '@/components/Navbar/Navbar';
+import AuctionCard from './auctionpage/AuctionCard';
+import FilterBar from './auctionpage/FilterBar';
+import SearchBar from './auctionpage/SearchBar';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { motion } from 'framer-motion';
+import { auctionApi } from '@/services/api';
+import './AuctionPage.css';
+
+const AuctionPage = () => {
+  const navigate = useNavigate();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [viewMode, setViewMode] = useState('grid');
+  const [filters, setFilters] = useState({
+    category: '',
+    condition: '',
+    priceRange: [0, 1000000],
+    sortBy: 'endTime'
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    fetchAuctions();
+  }, []);
+
+  const fetchAuctions = async () => {
+    try {
+      setLoading(true);
+      const data = await auctionApi.getAllAuctions();
+      setItems(data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch auction items. Please try again later.');
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredItems = items.filter(item => {
+    const matchesSearch = searchQuery === '' ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesCategory = filters.category === '' || item.category === filters.category;
+    const matchesCondition = filters.condition === '' || item.condition === filters.condition;
+    const matchesPrice = item.currentBid >= filters.priceRange[0] && 
+                        item.currentBid <= filters.priceRange[1];
+
+    return matchesSearch && matchesCategory && matchesCondition && matchesPrice;
+  }).sort((a, b) => {
+    switch (filters.sortBy) {
+      case 'priceAsc':
+        return a.currentBid - b.currentBid;
+      case 'priceDesc':
+        return b.currentBid - a.currentBid;
+      case 'endTime':
+        return new Date(a.endTime) - new Date(b.endTime);
+      default:
+        return 0;
+    }
+  });
+
+  if (loading) {
+    return (
+      <div className="auction-page">
+        <Navbar />
+        <div className="loading-container">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="auction-page">
+        <Navbar />
+        <div className="error-container">
+          <h2>Error</h2>
+          <p>{error}</p>
+          <button onClick={fetchAuctions} className="retry-button">
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auction-page">
+      <Navbar />
+      <div className="auction-controls">
+        <SearchBar
+          value={searchQuery}
+          onChange={(value) => setSearchQuery(value)}
+        />
+        <FilterBar
+          filters={filters}
+          onFilterChange={setFilters}
+          onViewModeChange={setViewMode}
+        />
+      </div>
+      <motion.div
+        className={`auction-grid ${viewMode}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item) => (
+            <AuctionCard
+              key={item.id}
+              item={item}
+              viewMode={viewMode}
+            />
+          ))
+        ) : (
+          <div className="no-results">
+            <h3>No items found</h3>
+            <p>Try adjusting your search or filters</p>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
+export default AuctionPage;

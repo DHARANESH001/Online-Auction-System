@@ -1,0 +1,93 @@
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.filter-section {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-section label {
+  display: block;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.filter-section select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: #fff;
+  font-size: 0.875rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-section select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.filter-section select option {
+  background-color: #1e293b;
+  color: #fff;
+}
+
+
+
+.view-mode {
+  min-width: auto;
+}
+
+.view-mode-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.view-mode-btn {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-mode-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.view-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.view-mode-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .filter-section {
+    min-width: 100%;
+  }
+
+  .view-mode {
+    min-width: auto;
+  }
+}

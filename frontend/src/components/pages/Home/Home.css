@@ -1,0 +1,91 @@
+.home {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a202c;
+  color: #e2e8f0;
+}
+
+.home-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  background-color: #1a202c;
+}
+
+.home h1 {
+  font-size: 2.5rem;
+  color: #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+.intro-section {
+  margin: 3rem 0;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.step {
+  background-color: #2d3748;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 1px solid #4a5568;
+}
+
+.step h3 {
+  color: #2c5282;
+  margin-bottom: 1rem;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  margin: 0 0.5rem;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #4299e1;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #3182ce;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: #2d3748;
+  color: #e2e8f0;
+  border: 1px solid #4a5568;
+}
+
+.btn-secondary:hover {
+  background-color: #4a5568;
+  transform: translateY(-2px);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
