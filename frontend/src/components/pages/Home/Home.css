@@ -6,6 +6,55 @@
   color: #e2e8f0;
 }
 
+.hero-section {
+  text-align: center;
+  padding: 4rem 1rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(rgba(26, 32, 44, 0.9), rgba(26, 32, 44, 0.9));
+  border-radius: 8px;
+}
+
+.hero-text {
+  font-size: 1.25rem;
+  max-width: 800px;
+  margin: 1.5rem auto;
+  color: #a0aec0;
+  line-height: 1.6;
+}
+
+.features-section {
+  margin-bottom: 4rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.feature {
+  background-color: #2d3748;
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid #4a5568;
+  transition: transform 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-5px);
+}
+
+.feature h3 {
+  color: #63b3ed;
+  margin-bottom: 1rem;
+}
+
+.feature p {
+  color: #a0aec0;
+  line-height: 1.6;
+}
+
 .home-content {
   flex: 1;
   padding: 2rem;
@@ -30,6 +79,70 @@
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
+}
+
+.step-details {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.step-details li {
+  color: #a0aec0;
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.step-details li:before {
+  content: '•';
+  color: #63b3ed;
+  position: absolute;
+  left: 0;
+}
+
+.categories-section {
+  margin: 4rem 0;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.category {
+  background-color: #2d3748;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #4a5568;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.category:hover {
+  background-color: #4a5568;
+  transform: translateY(-2px);
+}
+
+.cta-section {
+  text-align: center;
+  padding: 4rem 1rem;
+  margin-top: 2rem;
+  background-color: #2d3748;
+  border-radius: 8px;
+  border: 1px solid #4a5568;
+}
+
+.cta-section h2 {
+  margin-bottom: 1rem;
+}
+
+.cta-section p {
+  color: #a0aec0;
+  margin-bottom: 2rem;
 }
 
 .step {
