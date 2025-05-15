@@ -9,10 +9,40 @@ const AuctionCard = ({ item, viewMode }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const handleBidSubmit = (e) => {
+  const handleBidSubmit = async (e) => {
     e.preventDefault();
-    // Implement bid submission logic
-    console.log('Bid submitted:', bid);
+    if (!bid || isNaN(bid) || parseFloat(bid) <= item.currentPrice) {
+      alert('Please enter a valid bid amount higher than the current price');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to place a bid');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/items/${item._id}/bid`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: parseFloat(bid) })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to place bid');
+      }
+
+      const updatedItem = await response.json();
+      alert('Bid placed successfully!');
+      // You might want to refresh the items list here
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const timeLeft = () => {
@@ -42,8 +72,8 @@ const AuctionCard = ({ item, viewMode }) => {
     >
       <div className="card-image">
         <img
-          src={item.imageUrl || createPlaceholderImage(item.name)}
-          alt={item.name}
+          src={item.imageUrl || createPlaceholderImage(item.title)}
+          alt={item.title}
           className={`${imageLoaded ? 'loaded' : ''} ${imageError ? 'error' : ''}`}
           onLoad={() => setImageLoaded(true)}
           onError={() => {
@@ -62,21 +92,32 @@ const AuctionCard = ({ item, viewMode }) => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
           >
-            <button className="quick-bid-btn">Quick Bid</button>
+            <form onSubmit={handleBidSubmit} className="quick-bid-form">
+              <input
+                type="number"
+                value={bid}
+                onChange={(e) => setBid(e.target.value)}
+                placeholder={`Min bid: $${(item.currentPrice + 1).toFixed(2)}`}
+                min={item.currentPrice + 1}
+                step="0.01"
+                required
+              />
+              <button type="submit" className="quick-bid-btn">Place Bid</button>
+            </form>
           </motion.div>
         )}
       </div>
 
       <div className="card-content">
         <div className="card-header">
-          <h3>{item.name}</h3>
+          <h3>{item.title}</h3>
           <p className="description">{item.description}</p>
         </div>
 
         <div className="bid-info">
           <div className="current-bid">
-            <span className="label">Current Bid</span>
-            <span className="amount">${item.currentBid.toLocaleString()}</span>
+            <span className="label">Current Price</span>
+            <span className="amount">${item.currentPrice.toLocaleString()}</span>
           </div>
           <div className="time-left">
             <span className="label">Time Left</span>
@@ -86,16 +127,16 @@ const AuctionCard = ({ item, viewMode }) => {
 
         <div className="auction-details">
           <div className="detail">
-            <span className="label">Starting Bid</span>
-            <span>${item.startingBid.toLocaleString()}</span>
+            <span className="label">Starting Price</span>
+            <span>${item.startingPrice.toLocaleString()}</span>
           </div>
           <div className="detail">
-            <span className="label">Total Bids</span>
-            <span>{item.totalBids}</span>
+            <span className="label">Category</span>
+            <span>{item.category}</span>
           </div>
           <div className="detail">
-            <span className="label">Seller</span>
-            <span>{item.seller}</span>
+            <span className="label">Condition</span>
+            <span>{item.condition}</span>
           </div>
         </div>
 

@@ -7,46 +7,11 @@ import SearchBar from './auctionpage/SearchBar';
 import { motion } from 'framer-motion';
 import './AuctionPage.css';
 
-// Mock data for testing
-const mockAuctionItems = [
-  {
-    id: 1,
-    name: 'Diamond Necklace',
-    description: 'Beautiful diamond necklace with 24 carat gold chain',
-    currentBid: 1500,
-    startingBid: 1000,
-    endTime: '2024-12-31T23:59:59',
-    imageUrl: 'https://example.com/images/necklace.jpg',
-    category: 'Jewelry',
-    condition: 'New'
-  },
-  {
-    id: 2,
-    name: 'Vintage Watch',
-    description: 'Rare vintage watch from 1950s',
-    currentBid: 800,
-    startingBid: 500,
-    endTime: '2024-12-25T23:59:59',
-    imageUrl: 'https://example.com/images/watch.jpg',
-    category: 'Watches',
-    condition: 'Used'
-  },
-  {
-    id: 3,
-    name: 'Antique Vase',
-    description: 'Chinese porcelain vase from Ming Dynasty',
-    currentBid: 5000,
-    startingBid: 3000,
-    endTime: '2024-12-28T23:59:59',
-    imageUrl: 'https://example.com/images/vase.jpg',
-    category: 'Antiques',
-    condition: 'Used'
-  }
-];
-
 const AuctionPage = () => {
   const navigate = useNavigate();
-  const [items] = useState(mockAuctionItems);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
   const [filters, setFilters] = useState({
     category: '',
@@ -56,23 +21,45 @@ const AuctionPage = () => {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Fetch items from backend
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/items');
+        if (!response.ok) {
+          throw new Error('Failed to fetch items');
+        }
+        const data = await response.json();
+        setItems(data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching items:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchItems();
+  }, []);
+
+  // Filter and sort items
   const filteredItems = items.filter(item => {
     const matchesSearch = searchQuery === '' ||
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory = filters.category === '' || item.category === filters.category;
     const matchesCondition = filters.condition === '' || item.condition === filters.condition;
-    const matchesPrice = item.currentBid >= filters.priceRange[0] && 
-                        item.currentBid <= filters.priceRange[1];
+    const matchesPrice = item.currentPrice >= filters.priceRange[0] && 
+                        item.currentPrice <= filters.priceRange[1];
 
     return matchesSearch && matchesCategory && matchesCondition && matchesPrice;
   }).sort((a, b) => {
     switch (filters.sortBy) {
       case 'priceAsc':
-        return a.currentBid - b.currentBid;
+        return a.currentPrice - b.currentPrice;
       case 'priceDesc':
-        return b.currentBid - a.currentBid;
+        return b.currentPrice - a.currentPrice;
       case 'endTime':
         return new Date(a.endTime) - new Date(b.endTime);
       default:
@@ -96,27 +83,31 @@ const AuctionPage = () => {
           onViewModeChange={setViewMode}
         />
       </div>
-      <motion.div
-        className={`auction-grid ${viewMode}`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        {filteredItems.length > 0 ? (
-          filteredItems.map((item) => (
+      {loading ? (
+        <div className="loading">Loading items...</div>
+      ) : error ? (
+        <div className="error">{error}</div>
+      ) : filteredItems.length === 0 ? (
+        <div className="no-items">No items found</div>
+      ) : (
+        <motion.div
+          className={`auction-grid ${viewMode}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {filteredItems.map(item => (
             <AuctionCard
-              key={item.id}
-              item={item}
+              key={item._id}
+              item={{
+                ...item,
+                imageUrl: item.image ? `http://localhost:5000${item.image}` : null
+              }}
               viewMode={viewMode}
             />
-          ))
-        ) : (
-          <div className="no-results">
-            <h3>No items found</h3>
-            <p>Try adjusting your search or filters</p>
-          </div>
-        )}
-      </motion.div>
+          ))}
+        </motion.div>
+      )}
     </div>
   );
 };
