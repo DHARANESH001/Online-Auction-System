@@ -8,6 +8,7 @@ const Signup = () => {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     role: 'user',
   });
   const [error, setError] = useState('');
@@ -20,7 +21,7 @@ const Signup = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -29,28 +30,31 @@ const Signup = () => {
       return;
     }
 
-    // Mock signup success
-    const mockSignup = () => {
-      // Simulating email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
-        return { success: false, message: 'Invalid email format' };
+    try {
+      const response = await fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Redirect to login page after successful signup
+        navigate('/login');
+      } else {
+        setError(data.message || 'Signup failed');
       }
-      
-      // Simulating password validation
-      if (formData.password.length < 6) {
-        return { success: false, message: 'Password must be at least 6 characters' };
-      }
-
-      return { success: true };
-    };
-
-    const result = mockSignup();
-
-    if (result.success) {
-      navigate('/login');
-    } else {
-      setError(result.message || 'Signup failed');
+    } catch (error) {
+      setError('Network error. Please try again.');
+      console.error('Signup error:', error);
     }
   };
 
@@ -91,6 +95,19 @@ const Signup = () => {
               value={formData.password}
               onChange={handleChange}
               required
+              minLength="6"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              minLength="6"
             />
           </div>
           <div className="form-group">

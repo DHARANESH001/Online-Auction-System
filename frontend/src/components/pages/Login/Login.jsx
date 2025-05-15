@@ -18,25 +18,32 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Mock credentials
-    const mockUsers = [
-      { email: 'admin@example.com', password: 'admin123', role: 'admin' },
-      { email: 'user@example.com', password: 'user123', role: 'user' }
-    ];
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
 
-    const user = mockUsers.find(u => u.email === formData.email && u.password === formData.password);
+      const data = await response.json();
 
-    if (user) {
-      localStorage.setItem('token', 'mock-jwt-token');
-      localStorage.setItem('userRole', user.role);
-      localStorage.setItem('userEmail', user.email);
-      navigate(user.role === 'admin' ? '/admin' : '/auction', { replace: true });
-    } else {
-      setError('Invalid email or password');
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userRole', data.user.role);
+        localStorage.setItem('userEmail', data.user.email);
+        navigate(data.user.role === 'admin' ? '/admin' : '/auction', { replace: true });
+      } else {
+        setError(data.message || 'Login failed');
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
+      console.error('Login error:', error);
     }
   };
 
