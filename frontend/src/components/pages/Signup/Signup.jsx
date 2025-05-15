@@ -111,12 +111,13 @@ const Signup = () => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="role">Role</label>
+            <label htmlFor="role">Register As</label>
             <select
               id="role"
               name="role"
               value={formData.role}
               onChange={handleChange}
+              required
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>

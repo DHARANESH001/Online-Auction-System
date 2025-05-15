@@ -7,6 +7,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    role: 'user'
   });
   const [error, setError] = useState('');
 
@@ -23,6 +24,8 @@ const Login = () => {
     setError('');
 
     try {
+      console.log('Attempting login with:', { ...formData, password: '***' });
+
       const response = await fetch('http://localhost:5000/api/login', {
         method: 'POST',
         headers: {
@@ -32,18 +35,38 @@ const Login = () => {
       });
 
       const data = await response.json();
+      console.log('Server response:', data);
 
       if (response.ok) {
+        // Store complete user data
         localStorage.setItem('token', data.token);
         localStorage.setItem('userRole', data.user.role);
         localStorage.setItem('userEmail', data.user.email);
-        navigate(data.user.role === 'admin' ? '/admin' : '/auction', { replace: true });
+        localStorage.setItem('userId', data.user.id);
+        localStorage.setItem('username', data.user.username);
+
+        console.log('Login successful. User role:', data.user.role);
+        console.log('Stored token:', data.token);
+
+        // Clear form data
+        setFormData({
+          email: '',
+          password: '',
+          role: 'user'
+        });
+
+        // Redirect based on role
+        const redirectPath = data.user.role === 'admin' ? '/admin' : '/auction';
+        console.log('Redirecting to:', redirectPath);
+        navigate(redirectPath, { replace: true });
       } else {
-        setError(data.message || 'Login failed');
+        const errorMessage = data.message || 'Login failed';
+        console.error('Login failed:', errorMessage);
+        setError(errorMessage);
       }
     } catch (error) {
-      setError('Network error. Please try again.');
       console.error('Login error:', error);
+      setError('Network error. Please try again.');
     }
   };
 
@@ -74,6 +97,19 @@ const Login = () => {
               onChange={handleChange}
               required
             />
+          </div>
+          <div className="form-group">
+            <label htmlFor="role">Login As</label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              required
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
           <button type="submit" className="login-button">Login</button>
         </form>

@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -21,6 +22,9 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
     console.error('MongoDB connection error:', err);
 });
 
+// Define models object to store all models
+const models = {};
+
 // User Schema
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
@@ -32,16 +36,59 @@ const userSchema = new mongoose.Schema({
 
 // Item Schema
 const itemSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    startingPrice: { type: Number, required: true },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, required: true, trim: true },
+    startingPrice: { type: Number, required: true, min: 0 },
     currentPrice: { type: Number },
-    seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    endTime: { type: Date, required: true },
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    durationHours: { type: Number, min: 1, max: 168 },  // Made optional since we set it in pre-save
+    startTime: { type: Date },  // Made optional since we set it in pre-save
+    endTime: { type: Date },    // Made optional since we set it in pre-save
     image: { type: String },
-    category: { type: String, required: true },
+    category: { type: String, required: true, enum: ['Electronics', 'Watches', 'Jewelry', 'Antiques', 'Art', 'Other'] },
+    condition: { type: String, enum: ['New', 'Used', 'Refurbished', 'Antique'], default: 'New' },
     status: { type: String, enum: ['active', 'ended'], default: 'active' }
+}, {
+    timestamps: true
 });
+
+// Pre-save middleware to set currentPrice, startTime, and endTime
+itemSchema.pre('save', function(next) {
+    // Set currentPrice if not set
+    if (!this.currentPrice) {
+        this.currentPrice = this.startingPrice;
+    }
+
+    // Set startTime if not set
+    if (!this.startTime) {
+        this.startTime = new Date();
+    }
+
+    // Set endTime based on durationHours
+    if (this.durationHours) {
+        this.endTime = new Date(this.startTime.getTime() + (this.durationHours * 60 * 60 * 1000));
+    }
+
+    next();
+});
+
+// Initialize models
+try {
+    models.User = mongoose.model('User');
+} catch {
+    models.User = mongoose.model('User', userSchema);
+}
+
+try {
+    models.Item = mongoose.model('Item');
+} catch {
+    models.Item = mongoose.model('Item', itemSchema);
+}
+
+// Add indexes for better performance
+itemSchema.index({ status: 1, endTime: 1 });
+itemSchema.index({ seller: 1, status: 1 });
+itemSchema.index({ category: 1, status: 1 });
 
 // Bid Schema
 const bidSchema = new mongoose.Schema({
@@ -51,22 +98,38 @@ const bidSchema = new mongoose.Schema({
     time: { type: Date, default: Date.now }
 });
 
-// Models
-const User = mongoose.model('User', userSchema);
-const Item = mongoose.model('Item', itemSchema);
-const Bid = mongoose.model('Bid', bidSchema);
+// Initialize Bid model
+models.Bid = mongoose.model('Bid', bidSchema);
+
+// Get all models
+const { User, Item, Bid } = models;
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Multer Configuration for Image Upload
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, 'uploads/');
+        cb(null, uploadsDir);
     },
     filename: function(req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    }
+});
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(uploadsDir));
 
 // Authentication Middleware
 const authenticateToken = (req, res, next) => {
@@ -85,23 +148,33 @@ const authenticateToken = (req, res, next) => {
 // Auth Routes
 app.post('/api/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
 
-        // Find user by email
-        const user = await User.findOne({ email });
+        // Find user by email and role
+        const user = await User.findOne({ email, role });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid email or role' });
         }
 
-        // Validate password
+        // Check password
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
-            return res.status(400).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid password' });
         }
 
-        // Create token
+        // Additional role check
+        if (user.role !== role) {
+            return res.status(403).json({ message: 'Invalid role for this user' });
+        }
+
+        // Create token with all necessary user info
         const token = jwt.sign(
-            { id: user._id, username: user.username },
+            {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '24h' }
         );
@@ -122,7 +195,7 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/register', async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, role } = req.body;
         
         // Check if user exists
         const userExists = await User.findOne({ $or: [{ email }, { username }] });
@@ -138,52 +211,19 @@ app.post('/api/register', async (req, res) => {
         const user = new User({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            role: role || 'user' // Default to 'user' if role is not specified
         });
 
         await user.save();
 
-        // Create token
-        const token = jwt.sign(
-            { id: user._id, username: user.username },
-            process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: '24h' }
-        );
-
-        res.status(201).json({ token, user: { id: user._id, username, email } });
+        res.status(201).json({ message: 'Registration successful. Please login.' });
     } catch (error) {
         res.status(500).json({ message: 'Error creating user', error: error.message });
     }
 });
 
-app.post('/api/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
 
-        // Find user
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: 'User not found' });
-        }
-
-        // Validate password
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) {
-            return res.status(400).json({ message: 'Invalid password' });
-        }
-
-        // Create token
-        const token = jwt.sign(
-            { id: user._id, username: user.username },
-            process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: '24h' }
-        );
-
-        res.json({ token, user: { id: user._id, username: user.username, email } });
-    } catch (error) {
-        res.status(500).json({ message: 'Error logging in', error: error.message });
-    }
-});
 
 // Item Routes
 app.post('/api/items', authenticateToken, upload.single('image'), async (req, res) => {
@@ -233,10 +273,131 @@ app.get('/api/items/:id', async (req, res) => {
 });
 
 // Bid Routes
+// Item Routes
+app.post('/api/items', authenticateToken, upload.single('image'), async (req, res) => {
+  try {
+    console.log('Received item data:', req.body);
+    console.log('Received file:', req.file);
+    console.log('User data from token:', req.user);
+
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admin users can create items' });
+    }
+
+    // Extract and validate fields
+    const title = req.body.title?.trim();
+    const description = req.body.description?.trim();
+    const startingPrice = parseFloat(req.body.startingPrice);
+    const durationHours = parseFloat(req.body.durationHours);
+    const category = req.body.category?.trim();
+    const condition = req.body.condition || 'New';
+
+    // Validate required fields
+    if (!title || !description || !category) {
+      return res.status(400).json({
+        message: 'Missing required fields',
+        missingFields: {
+          title: !title,
+          description: !description,
+          category: !category
+        }
+      });
+    }
+
+    // Validate numeric fields
+    if (isNaN(startingPrice) || startingPrice <= 0) {
+      return res.status(400).json({ message: 'Starting price must be a positive number' });
+    }
+
+    if (isNaN(durationHours) || durationHours <= 0 || durationHours > 168) {
+      return res.status(400).json({ message: 'Duration must be between 1 and 168 hours' });
+    }
+
+    // Create item data
+    const itemData = {
+      title,
+      description,
+      startingPrice,
+      durationHours,
+      category,
+      condition,
+      seller: req.user.id,
+      startTime: new Date()
+    };
+
+    // Add image if provided
+    if (req.file) {
+      itemData.image = `/uploads/${req.file.filename}`;
+    }
+
+    console.log('Creating new item with data:', itemData);
+
+    // Create and save the item
+    const newItem = new Item(itemData);
+    const savedItem = await newItem.save();
+
+    console.log('Item saved successfully:', savedItem);
+    return res.status(201).json(savedItem);
+
+  } catch (error) {
+    console.error('Error creating item:', error);
+    return res.status(500).json({
+      message: 'Error creating item',
+      error: error.message,
+      details: error.errors ? Object.keys(error.errors).map(key => ({
+        field: key,
+        message: error.errors[key].message
+      })) : null
+    });
+  }
+});
+
+app.get('/api/items', async (req, res) => {
+  try {
+    const items = await Item.find({ status: 'active' })
+      .sort({ endTime: 1 })
+      .populate('seller', 'username');
+    res.json(items);
+  } catch (error) {
+    console.error('Error fetching items:', error);
+    res.status(500).json({ message: 'Error fetching items' });
+  }
+});
+
+app.delete('/api/items/:id', authenticateToken, async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id);
+    
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    // Only admin or the seller can delete the item
+    if (req.user.role !== 'admin' && item.seller.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to delete this item' });
+    }
+
+    // Delete the image file if it exists
+    if (item.image) {
+      const imagePath = path.join(__dirname, item.image);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    await Item.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Item deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    res.status(500).json({ message: 'Error deleting item' });
+  }
+});
+
 app.post('/api/items/:id/bid', authenticateToken, async (req, res) => {
-    try {
-        const { amount } = req.body;
-        const item = await Item.findById(req.params.id);
+  try {
+    const { amount } = req.body;
+    const item = await Item.findById(req.params.id);
 
         if (!item) {
             return res.status(404).json({ message: 'Item not found' });
