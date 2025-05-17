@@ -14,8 +14,8 @@ const AuctionPage = () => {
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
   const [filters, setFilters] = useState({
-    category: '',
-    condition: '',
+    category: 'all',
+    condition: 'all',
     priceRange: [0, 1000000],
     sortBy: 'endTime'
   });
@@ -48,8 +48,10 @@ const AuctionPage = () => {
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = filters.category === '' || item.category === filters.category;
-    const matchesCondition = filters.condition === '' || item.condition === filters.condition;
+    const matchesCategory = filters.category === 'all' || 
+      item.category.toLowerCase() === filters.category.toLowerCase();
+    const matchesCondition = filters.condition === 'all' || 
+      item.condition.toLowerCase() === filters.condition.toLowerCase();
     const matchesPrice = item.currentPrice >= filters.priceRange[0] && 
                         item.currentPrice <= filters.priceRange[1];
 
